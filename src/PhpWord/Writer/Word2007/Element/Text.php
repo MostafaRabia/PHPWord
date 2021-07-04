@@ -11,6 +11,7 @@
  * contributors, visit https://github.com/PHPOffice/PHPWord/contributors.
  *
  * @see         https://github.com/PHPOffice/PHPWord
+ *
  * @copyright   2010-2018 PHPWord contributors
  * @license     http://www.gnu.org/licenses/lgpl.txt LGPL version 3
  */
@@ -20,7 +21,7 @@ namespace PhpOffice\PhpWord\Writer\Word2007\Element;
 use PhpOffice\PhpWord\Element\TrackChange;
 
 /**
- * Text element writer
+ * Text element writer.
  *
  * @since 0.10.0
  */
@@ -39,16 +40,25 @@ class Text extends AbstractElement
 
         $this->startElementP();
 
+        $xmlWriter->startElement('w:pPr');
+        $xmlWriter->startElement('w:bidi');
+        $xmlWriter->endElement();
+        $xmlWriter->endElement();
+
         $this->writeOpeningTrackChange();
 
         $xmlWriter->startElement('w:r');
 
         $this->writeFontStyle();
 
+        $xmlWriter->startElement('w:rPr'); //Added
+        $xmlWriter->startElement('w:rtl'); //Added
+        $xmlWriter->endElement(); //Added
+        $xmlWriter->endElement(); //Added
         $textElement = 'w:t';
         //'w:delText' in case of deleted text
         $changed = $element->getTrackChange();
-        if ($changed != null && $changed->getChangeType() == TrackChange::DELETED) {
+        if (null != $changed && TrackChange::DELETED == $changed->getChangeType()) {
             $textElement = 'w:delText';
         }
         $xmlWriter->startElement($textElement);
@@ -64,36 +74,36 @@ class Text extends AbstractElement
     }
 
     /**
-     * Write opening of changed element
+     * Write opening of changed element.
      */
     protected function writeOpeningTrackChange()
     {
         $changed = $this->getElement()->getTrackChange();
-        if ($changed == null) {
+        if (null == $changed) {
             return;
         }
 
         $xmlWriter = $this->getXmlWriter();
 
-        if (($changed->getChangeType() == TrackChange::INSERTED)) {
+        if ((TrackChange::INSERTED == $changed->getChangeType())) {
             $xmlWriter->startElement('w:ins');
-        } elseif ($changed->getChangeType() == TrackChange::DELETED) {
+        } elseif (TrackChange::DELETED == $changed->getChangeType()) {
             $xmlWriter->startElement('w:del');
         }
         $xmlWriter->writeAttribute('w:author', $changed->getAuthor());
-        if ($changed->getDate() != null) {
+        if (null != $changed->getDate()) {
             $xmlWriter->writeAttribute('w:date', $changed->getDate()->format('Y-m-d\TH:i:s\Z'));
         }
         $xmlWriter->writeAttribute('w:id', $this->getElement()->getElementId());
     }
 
     /**
-     * Write ending
+     * Write ending.
      */
     protected function writeClosingTrackChange()
     {
         $changed = $this->getElement()->getTrackChange();
-        if ($changed == null) {
+        if (null == $changed) {
             return;
         }
 
